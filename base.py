@@ -6,12 +6,36 @@ host = 'localhost'
 user = 'root'
 password = '1234qwerQWER'
 database = 'project'
-table_name = 'test_test'
+table_name = 'user'
 
 write_path = "/root/IdeaProjects/spring-cloud-project/project/src/main/java/com/example"
 entity_write_path = write_path + "/entity"
 dto_write_path = write_path + "/dto"
 vo_write_path = write_path + "/vo"
+
+
+# vo对象去除的字段
+entity_remove_fields = []
+
+# entity对象增加的字段,格式为字段名，数据类型，注释，默认值
+entity_add_fields = []
+
+# vo对象去除的字段
+vo_remove_fields = ["password", "status", "is_set_password", "file_save_relative_path", "file_type_id",
+                    "upload_user_id"]
+
+# vo对象增加的字段,格式为字段名，数据类型，注释，默认值
+vo_add_fields = [["refreshJwt", "String", "刷新token", ""],
+                 ["token", "String", "token", ""],
+                 ["smsCode", "String", "短信验证码", ""]]
+# dto对象去除的字段
+dto_remove_fields = []
+# dto对象增加的字段,格式为字段名，数据类型，注释，默认值
+dto_add_fields = [["pageNum", "int", "当前页码", "1"],
+                  ["pageSize", "int", "每页记录数", "10"],
+                  ["refreshJwt", "String", "刷新token", ""],
+                  ["newPassword", "String", "新密码", ""],
+                  ["smsCode", "String", "短信验证码", ""]]
 
 
 def get_file_name():
@@ -39,28 +63,6 @@ def get_default_value(field: str):
         default_value = "0"
     return default_value
 
-
-# vo对象去除的字段
-entity_remove_fields = []
-
-# entity对象增加的字段,格式为字段名，数据类型，注释，默认值
-entity_add_fields = []
-
-# vo对象去除的字段
-vo_remove_fields = ["password", "status", "is_set_password", "file_save_relative_path", "file_type_id",
-                    "upload_user_id"]
-
-# vo对象增加的字段,格式为字段名，数据类型，注释，默认值
-vo_add_fields = [["refreshJwt", "String", "刷新token", ""],
-                 ["token", "String", "token", ""],
-                 ["smsCode", "String", "短信验证码", ""]]
-# dto对象去除的字段
-dto_remove_fields = []
-# dto对象增加的字段,格式为字段名，数据类型，注释，默认值
-dto_add_fields = [["pageNum", "int", "当前页码", "1"],
-                  ["pageSize", "int", "每页记录数", "10"],
-                  ["refreshJwt", "String", "刷新token", ""],
-                  ["smsCode", "String", "短信验证码", ""]]
 
 connection = pymysql.connect(host=host,
                              user=user,
