@@ -16,6 +16,8 @@ def build_fields_str(field: str, field_type: str, comment: str, default_value: s
         comment = field
 
     s += f"    /**\n     * {comment}\n     */\n"
+    if field == "id":
+        s += '    @TableId("id")\n'
     # if default_value is None or default_value == "":
     #     s += f"    private {base.type_database_to_java(field_type)} {snake_to_camel(field)};\n\n"
     # else:
@@ -27,6 +29,7 @@ def build_fields_str(field: str, field_type: str, comment: str, default_value: s
 # 生成Java实体类
 def generate_java_entity_class() -> str:
     java_class = (f"package com.example.entity;\n\n"
+                  f"import com.baomidou.mybatisplus.annotation.TableId;\n"
                   f"import lombok.Data;\n\n"
                   f"import java.sql.Timestamp;\n\n"
                   f"@Data\npublic class {java_name} {{\n\n")
