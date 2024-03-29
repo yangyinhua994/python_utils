@@ -29,10 +29,13 @@ def build_fields_str(field: str, field_type: str, comment: str, default_value: s
 # 生成Java实体类
 def generate_java_entity_class() -> str:
     java_class = (f"package com.example.entity;\n\n"
+                  f"import com.baomidou.mybatisplus.annotation.TableName;\n"
                   f"import com.baomidou.mybatisplus.annotation.TableId;\n"
                   f"import lombok.Data;\n\n"
                   f"import java.sql.Timestamp;\n\n"
-                  f"@Data\npublic class {java_name} {{\n\n")
+                  f"@Data\n"
+                  f'@TableName("{base.table_name}")\n'
+                  f"public class {java_name} {{\n\n")
 
     for field, field_type, comment in base.get_table_fields_with_comments():
         if field in base.entity_remove_fields:
