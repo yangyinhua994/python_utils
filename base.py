@@ -6,7 +6,7 @@ host = 'localhost'
 user = 'root'
 password = '1234qwerQWER'
 database = 'project'
-table_name = 'file'
+table_name = 'user_role'
 
 write_path = "/root/IdeaProjects/spring-cloud-project/project/src/main/java/com/example"
 entity_write_path = write_path + "/entity"
@@ -35,7 +35,9 @@ vo_add_fields = []
 dto_remove_fields = []
 # dto对象增加的字段,格式为字段名，数据类型，注释，默认值
 dto_add_fields = [["pageNum", "int", "当前页码", "1"],
-                  ["pageSize", "int", "每页记录数", "10"]]
+                  ["pageSize", "int", "每页记录数", "10"],
+                  ["newId", "Long", "切换的角色id", "0"]
+                  ]
 
 
 # user表字段,难得改了,先注释掉
@@ -102,6 +104,8 @@ def type_database_to_java(field_type: str):
         java_type = 'int'
     elif field_type == 'timestamp':
         java_type = 'Timestamp'
+    elif field_type == 'Long':
+        java_type = 'Long'
     else:
         java_type = 'field_type'  # 未知类型
     return java_type
