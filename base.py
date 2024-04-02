@@ -6,7 +6,7 @@ host = 'localhost'
 user = 'root'
 password = '1234qwerQWER'
 database = 'project'
-table_name = 'user_role'
+table_name = 'file'
 
 write_path = "/root/IdeaProjects/spring-cloud-project/project/src/main/java/com/example"
 entity_write_path = write_path + "/entity"
@@ -56,7 +56,7 @@ def get_file_name():
 def get_default_value(field: str):
     default_value = ""
     if field == "id":
-        default_value = "0L"
+        default_value = "0"
     elif field == "status":
         default_value = "2"
     elif field == "user_type":
