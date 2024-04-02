@@ -2,11 +2,11 @@
 import pymysql
 from typing import List, Tuple
 
-host = 'localhost'
+host = '124.71.213.166'
 user = 'root'
 password = '1234qwerQWER'
 database = 'project'
-table_name = 'user_role'
+table_name = 'company'
 
 write_path = "/root/IdeaProjects/spring-cloud-project/project/src/main/java/com/example"
 entity_write_path = write_path + "/entity"
@@ -36,7 +36,7 @@ dto_remove_fields = []
 # dto对象增加的字段,格式为字段名，数据类型，注释，默认值
 dto_add_fields = [["pageNum", "int", "当前页码", "1"],
                   ["pageSize", "int", "每页记录数", "10"],
-                  ["newId", "Long", "切换的角色id", "0"]
+                  ["newId", "Long", "切换的角色id", "0L"]
                   ]
 
 
@@ -58,7 +58,7 @@ def get_file_name():
 def get_default_value(field: str):
     default_value = ""
     if field == "id":
-        default_value = "0"
+        default_value = "0L"
     elif field == "status":
         default_value = "2"
     elif field == "user_type":
@@ -72,6 +72,13 @@ def get_default_value(field: str):
     elif field == "file_type_id":
         default_value = "0"
     return default_value
+
+
+def get_example_value(field_type: str):
+    example_value = ""
+    if field_type == "bigint" or field_type == "int" or field_type == "Long":
+        example_value = "0"
+    return example_value
 
 
 connection = pymysql.connect(host=host,

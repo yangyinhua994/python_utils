@@ -11,15 +11,19 @@ def build_fields_str(field: str, field_type: str, comment: str, default_value: s
     s = ""
     if default_value is None or default_value == "":
         default_value = base.get_default_value(field)
+    example_value = base.get_example_value(field_type)
 
     if comment is None or comment == "":
         comment = field
 
-    if default_value == "":
+    if example_value == "":
         s += f'    @ApiModelProperty(value = "{comment}")'
     else:
-        s += f'    @ApiModelProperty(value = "{comment}", example = "{default_value}")'
-    s += f"\n    private {base.type_database_to_java(field_type)} {snake_to_camel(field)};\n\n"
+        s += f'    @ApiModelProperty(value = "{comment}", example = "{example_value}")'
+    if default_value == "":
+        s += f"\n    private {base.type_database_to_java(field_type)} {snake_to_camel(field)};\n\n"
+    else:
+        s += f"\n    private {base.type_database_to_java(field_type)} {snake_to_camel(field)} = {default_value};\n\n"
     return s
 
 
