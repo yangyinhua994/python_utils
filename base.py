@@ -2,11 +2,11 @@
 import pymysql
 from typing import List, Tuple
 
-host = '124.71.213.166'
-user = 'root'
+host = '192.168.0.232'
+user = 'yyh'
 password = '1234qwerQWER'
 database = 'project'
-table_name = 'company'
+table_name = 'file_type'
 
 write_path = "/root/IdeaProjects/spring-cloud-project/project/src/main/java/com/example"
 entity_write_path = write_path + "/entity"
@@ -58,6 +58,10 @@ def get_file_name():
 def get_default_value(field: str):
     default_value = ""
     if field == "id":
+        default_value = "0L"
+    elif field == "upload_user_id":
+        default_value = "0L"
+    elif field == "file_type_id":
         default_value = "0L"
     elif field == "status":
         default_value = "2"
