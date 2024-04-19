@@ -1,12 +1,25 @@
 # 数据库连接信息
+import random
+
 import pymysql
 from typing import List, Tuple
+
+import requests
 
 host = '192.168.0.232'
 user = 'yyh'
 password = '1234qwerQWER'
 database = 'project'
-table_name = 'file_type'
+table_name = 'company_role'
+
+interface_url = "http://localhost:8080"
+
+# 定义请求头信息
+headers = {
+    "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInN1YiI6IjE4NzE3MDg4NDE0IiwiaWF0IjoxNzExNjA1MDA1LCJl"
+                     "eHAiOjg4MTExNjA1MDA1fQ.wrFojucpq4ytvF65ZbDrt-0zc0-MUCTirVm7c_06UIs",
+    "Content-Type": "application/json"
+}
 
 write_path = "/root/IdeaProjects/spring-cloud-project/project/src/main/java/com/example"
 entity_write_path = write_path + "/entity"
@@ -21,7 +34,7 @@ entity_add_fields = []
 
 # vo对象去除的字段
 vo_remove_fields = ["password", "status", "is_set_password", "file_save_relative_path", "file_type_id",
-                    "upload_user_id"]
+                    "upload_user_id", "create_time", "update_time", "id_card"]
 
 # vo对象增加的字段,格式为字段名，数据类型，注释，默认值
 # user表字段,难得改了,先注释掉
@@ -35,8 +48,7 @@ vo_add_fields = []
 dto_remove_fields = []
 # dto对象增加的字段,格式为字段名，数据类型，注释，默认值
 dto_add_fields = [["pageNum", "int", "当前页码", "1"],
-                  ["pageSize", "int", "每页记录数", "10"],
-                  ["newId", "Long", "切换的角色id", "0L"]
+                  ["pageSize", "int", "每页记录数", "10"]
                   ]
 
 
@@ -46,6 +58,101 @@ dto_add_fields = [["pageNum", "int", "当前页码", "1"],
 #                   ["smsCode", "String", "短信验证码", ""],
 #                   ["pageNum", "int", "当前页码", "1"],
 #                   ["pageSize", "int", "每页记录数", "10"]]
+
+
+class GenerateUtil:
+
+    @staticmethod
+    def generate_phone_numbers(number_of_phone_numbers):
+        phone_numbers = []
+        for _ in range(number_of_phone_numbers):
+            phone_number = "1"  # 以1开头
+            for _ in range(10):
+                phone_number += str(random.randint(0, 9))
+            phone_numbers.append(phone_number)
+        return phone_numbers
+
+    @staticmethod
+    def generate_names(number_of_names):
+        surnames = ["赵", "钱", "孙", "李", "周", "吴", "郑", "王", "冯", "陈", "褚", "卫", "蒋", "沈", "韩",
+                    "杨", "朱", "秦", "尤", "许", "何", "吕", "施", "张", "孔", "曹", "严", "华", "金", "魏", "陶",
+                    "姜",
+                    "戚", "谢", "邹", "喻", "柏", "水", "窦", "章", "云", "苏", "潘", "葛", "奚", "范", "彭", "郎"]
+        names = []
+        for _ in range(number_of_names):
+            name = random.choice(surnames)  # 随机选择一个姓氏
+            name_length = random.randint(1, 2)  # 随机名字的长度，可以是1位或2位
+            for _ in range(name_length):
+                random_char = chr(random.randint(0x4e00, 0x9fff))  # 随机生成一个汉字
+                name += random_char
+            names.append(name)
+        return names
+
+
+def get_sms_code(phone_number):
+    url = f"{interface_url}/api/getSmsCode?phoneNumber={phone_number}"
+    data = send_get_request(url)
+    if data is not None and len(data) > 0:
+        if data.get("code") == 200:
+            sms_code = data.get("data").get("smsCode")
+            return sms_code
+    return None
+
+
+def login_with_phone_number_and_password(phone_number, user_name, pass_word):
+    url = f"{interface_url}/api/loginSmsCode"
+    sms_code = get_sms_code(phone_number)
+    if sms_code is None:
+        print("获取验证码失败")
+    else:
+        params = {
+            "phoneNumber": phone_number,
+            "smsCode": sms_code,
+            "userName": user_name,
+            "password": pass_word
+        }
+        json = send_post_request(url, params=params)
+        if json.get("code") == 200:
+            print(f"{phone_number} 登陆成功")
+        else:
+            message = json.get("message")
+            print(f"{phone_number} 登陆失败，原因为:{message}")
+
+
+# 企业邀请用户
+def inviteUsers(sendRoleId, companyId, receive_phone_numbers):
+    url = f"{interface_url}/roleMessage/inviteUsers"
+
+    # 定义请求参数
+    params = {
+        "sendRoleId": sendRoleId,
+        "companyId": companyId,
+        "receivePhoneNumbers": receive_phone_numbers
+    }
+    json = send_post_request(url, params)
+    if json.get("code") == 200:
+        print(f"邀请{receive_phone_numbers}加入企业成功")
+    else:
+        message = json.get("message")
+        print(f'邀请{receive_phone_numbers}加入企业失败，原因为:{message}')
+
+
+def send_post_request(url, params=None, data=None):
+    response = requests.post(url, params=params, data=data, headers=headers)
+    if response.status_code == 200:
+        json = response.json()
+        return json
+    else:
+        print("请求失败")
+        return None
+
+
+def send_get_request(url):
+    response = requests.get(url)
+    if response.status_code == 200 and response.json().get("code") == 200:
+        return response.json()
+    else:
+        print(response.json().get("message"))
 
 
 def get_file_name():
