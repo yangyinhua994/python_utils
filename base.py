@@ -1,4 +1,3 @@
-# 数据库连接信息
 import random
 from datetime import datetime
 from hanziconv import HanziConv
@@ -27,6 +26,15 @@ headers = {
                      "eHAiOjg4MTExNjA1MDA1fQ.wrFojucpq4ytvF65ZbDrt-0zc0-MUCTirVm7c_06UIs",
     "Content-Type": "application/json"
 }
+
+
+def setToken(token):
+    global headers
+    headers = {
+        "Authorization": token,
+        "Content-Type": "application/json"
+    }
+
 
 write_path = "/root/IdeaProjects/spring-cloud-project/project/src/main/java/com/example"
 entity_write_path = write_path + "/entity"
@@ -274,9 +282,9 @@ def get_sms_code(phone_number):
 def changeRole(userId, targetRoleId):
     url = f"{interface_url}/userRole/changeRole"
     params = {
-            "userId": userId,
-            "targetRoleId": targetRoleId
-        }
+        "userId": userId,
+        "targetRoleId": targetRoleId
+    }
     success, json = send_post_request(url, params=params)
     if success:
         if json.get("code") == success_code:
@@ -286,6 +294,7 @@ def changeRole(userId, targetRoleId):
             message = json.get("message")
             print(f"切换角色成功, 原因为{message}")
     return False, json
+
 
 def login_with_sms_code(phone_number, user_name, pass_word):
     url = f"{interface_url}/api/loginSmsCode"

@@ -6,7 +6,7 @@ company_handle_status_refuse = 2
 if __name__ == '__main__':
 
     # 测试个数
-    test_number = 4000
+    test_number = 1
     # 邀请用户加入的公司id
     company_id = None
 
