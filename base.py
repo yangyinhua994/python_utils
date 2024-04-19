@@ -271,6 +271,22 @@ def get_sms_code(phone_number):
     return False, json
 
 
+def changeRole(userId, targetRoleId):
+    url = f"{interface_url}/userRole/changeRole"
+    params = {
+            "userId": userId,
+            "targetRoleId": targetRoleId
+        }
+    success, json = send_post_request(url, params=params)
+    if success:
+        if json.get("code") == success_code:
+            print("切换角色成功")
+            return True, json
+        else:
+            message = json.get("message")
+            print(f"切换角色成功, 原因为{message}")
+    return False, json
+
 def login_with_sms_code(phone_number, user_name, pass_word):
     url = f"{interface_url}/api/loginSmsCode"
     success, json = get_sms_code(phone_number)

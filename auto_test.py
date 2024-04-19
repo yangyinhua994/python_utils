@@ -6,7 +6,7 @@ company_handle_status_refuse = 2
 if __name__ == '__main__':
 
     # 测试个数
-    test_number = 100
+    test_number = 4000
     # 邀请用户加入的公司id
     company_id = None
 
@@ -26,18 +26,28 @@ if __name__ == '__main__':
             success, json = base.login_with_sms_code(phone_number, usernames[i], "123456")
             user_id = None
             if success:
-                user_id = json.get("data").get("id")
-                # 登陆成功
-                if company_id is None:
-                    success, row, columns = base.add_company(admin_id)
-                else:
-                    success, row, columns = base.get_company_by_id(company_id)
+                switching_role_id = 0
+                data = json.get("data")
+                user_id = data.get("id")
+                for userRole in data.get("userRoles"):
+                    if userRole.get("isUsed") == 1:
+                        switching_role_id = userRole.get("id")
+                if switching_role_id == 0:
+                    switching_role_id = data.get("userRoles")[0].get("id")
+                # 切换角色
+                success, json = base.changeRole(user_id, switching_role_id)
                 if success:
-                    company_id = row[columns.index("id")]
-                    success, json = base.inviteUser(admin_id, company_id, phone_number)
-                    if success and company_handle_status is not None:
-                        success, json = base.updateMessageById(json.get("data").get("id"), company_handle_status)
-                        all_success = True
+                    if company_id is None:
+                        success, row, columns = base.add_company(admin_id)
+                    else:
+                        success, row, columns = base.get_company_by_id(company_id)
+                    if success:
+                        company_id = row[columns.index("id")]
+                        success, json = base.inviteUser(admin_id, company_id, phone_number)
+                        if success and company_handle_status is not None:
+                            success, json = base.updateMessageById(json.get("data").get("id"), company_handle_status)
+                            all_success = True
+
             if all_success:
                 print(f"用户:{usernames[i]} ，电话号码:{phone_number} ,新增成功")
             else:
