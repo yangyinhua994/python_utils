@@ -34,7 +34,7 @@ def generate_java_entity_class() -> str:
                   f"import lombok.Data;\n\n"
                   f"import java.sql.Timestamp;\n\n"
                   f"@Data\n"
-                  f'@TableName("{base.table_name}")\n'
+                  f'@TableName("{base.database_table_name}")\n'
                   f"public class {java_name} {{\n\n")
 
     for field, field_type, comment in base.get_table_fields_with_comments():

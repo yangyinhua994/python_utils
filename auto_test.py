@@ -1,52 +1,46 @@
-import pymysql
-import requests
-
 import base
 
-connection = pymysql.connect(host=base.host,
-                             user=base.user,
-                             password=base.password,
-                             database=base.database)
-cursor = connection.cursor()
+company_handle_status_agree = 1
+company_handle_status_refuse = 2
 
 if __name__ == '__main__':
+
+    # 测试个数
+    test_number = 100
     # 邀请用户加入的公司id
     company_id = None
-    # 测试个数
-    test_number = 1
-    if company_id is None:
-        sql = "select * from company LIMIT 0, 1"
-        cursor.execute(sql)
-    else:
-        sql = f"select * from company where id = {company_id}"
-        cursor.execute(sql)
 
-    columns = cursor.description
-    column_names = [column[0] for column in columns]
-    row = cursor.fetchone()
+    # 操作人id
+    admin_id = 1
+    # 公司邀请处理状态[1：统一，2：拒绝]
+    company_handle_status = company_handle_status_agree
+    company_refuse_reason = None
 
-    if row is None:
-        print("没有查询到该公司数据")
-    else:
-        # 根据字段名来获取字段值
-        company_id_index = column_names.index("id")
-        user_id_index = column_names.index("user_id")
-
-        company_id = row[company_id_index]
-        user_id = row[user_id_index]
-
+    success, json = base.get_user_by_id(admin_id)
+    if success:
         usernames = base.GenerateUtil.generate_names(test_number)
         phone_numbers = base.GenerateUtil.generate_phone_numbers(test_number)
         for i in range(test_number):
-            base.login_with_phone_number_and_password(phone_numbers[i], usernames[i], "123456")
-            base.inviteUsers(user_id, company_id, phone_numbers[i])
+            all_success = False
+            phone_number = phone_numbers[i]
+            success, json = base.login_with_sms_code(phone_number, usernames[i], "123456")
+            user_id = None
+            if success:
+                user_id = json.get("data").get("id")
+                # 登陆成功
+                if company_id is None:
+                    success, row, columns = base.add_company(admin_id)
+                else:
+                    success, row, columns = base.get_company_by_id(company_id)
+                if success:
+                    company_id = row[columns.index("id")]
+                    success, json = base.inviteUser(admin_id, company_id, phone_number)
+                    if success and company_handle_status is not None:
+                        success, json = base.updateMessageById(json.get("data").get("id"), company_handle_status)
+                        all_success = True
+            if all_success:
+                print(f"用户:{usernames[i]} ，电话号码:{phone_number} ,新增成功")
+            else:
+                print(f"用户:{usernames[i]} ，电话号码:{phone_number} ,新增失败")
 
-cursor.close()
-
-
-
-
-
-
-
-
+    print("自动化测试全部成功")

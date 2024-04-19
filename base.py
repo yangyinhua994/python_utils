@@ -1,19 +1,26 @@
 # 数据库连接信息
 import random
-
+from datetime import datetime
+from hanziconv import HanziConv
 import pymysql
 from typing import List, Tuple
-
+from faker import Faker
 import requests
 
 host = '192.168.0.232'
-user = 'yyh'
-password = '1234qwerQWER'
-database = 'project'
-table_name = 'company_role'
+database_username = 'yyh'
+database_password = '1234qwerQWER'
+database_name = 'project'
+database_table_name = 'company_role'
 
 interface_url = "http://localhost:8080"
+success_code = 200
 
+connection = pymysql.connect(host=host,
+                             user=database_username,
+                             password=database_password,
+                             database=database_name)
+cursor = connection.cursor()
 # 定义请求头信息
 headers = {
     "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInN1YiI6IjE4NzE3MDg4NDE0IiwiaWF0IjoxNzExNjA1MDA1LCJl"
@@ -83,40 +90,72 @@ class GenerateUtil:
             name = random.choice(surnames)  # 随机选择一个姓氏
             name_length = random.randint(1, 2)  # 随机名字的长度，可以是1位或2位
             for _ in range(name_length):
-                random_char = chr(random.randint(0x4e00, 0x9fff))  # 随机生成一个汉字
+                random_char = chr(random.randint(0x4e00, 0x9fff))
                 name += random_char
-            names.append(name)
+            names.append(HanziConv.toSimplified(name))
         return names
 
 
-def get_sms_code(phone_number):
-    url = f"{interface_url}/api/getSmsCode?phoneNumber={phone_number}"
-    data = send_get_request(url)
-    if data is not None and len(data) > 0:
-        if data.get("code") == 200:
-            sms_code = data.get("data").get("smsCode")
-            return sms_code
-    return None
+def clear_data(ignore_user_ids=None, ignore_company_ids=None):
+    if ignore_user_ids is None:
+        ignore_user_ids = []
+    if ignore_company_ids is None:
+        ignore_company_ids = []
+
+    ignore_user_ids.append(1)
+    ignore_user_ids.append(3)
+    ignore_company_ids.append(6)
+    # 删除user表中id不在user_ids列表中的数据
+    cursor.execute("DELETE FROM user WHERE id NOT IN ({})".format(','.join(map(str, ignore_user_ids))))
+
+    # 删除user_role表中user_id不在user_ids列表中的数据
+    cursor.execute("DELETE FROM user_role WHERE user_id NOT IN ({})".format(','.join(map(str, ignore_user_ids))))
+
+    cursor.execute("DELETE FROM company WHERE id NOT IN ({})".format(','.join(map(str, ignore_company_ids))))
+
+    cursor.execute("DELETE FROM role_message")
+
+    # 提交事务
+    connection.commit()
+    print("数据已成功清理")
 
 
-def login_with_phone_number_and_password(phone_number, user_name, pass_word):
-    url = f"{interface_url}/api/loginSmsCode"
-    sms_code = get_sms_code(phone_number)
-    if sms_code is None:
-        print("获取验证码失败")
-    else:
-        params = {
-            "phoneNumber": phone_number,
-            "smsCode": sms_code,
-            "userName": user_name,
-            "password": pass_word
-        }
-        json = send_post_request(url, params=params)
-        if json.get("code") == 200:
-            print(f"{phone_number} 登陆成功")
+# 处理消息
+def updateMessageById(id, handleStatus):
+    url = f"{interface_url}/roleMessage/updateMessageById"
+    params = {
+        "id": id,
+        "handleStatus": handleStatus,
+    }
+    success, json = send_post_request(url, params)
+    if success:
+        if json.get("code") != success_code:
+            print(f"处理消息失败，原因为:{json.get('message')}")
         else:
-            message = json.get("message")
-            print(f"{phone_number} 登陆失败，原因为:{message}")
+            return True, json
+
+    return False
+
+
+def get_role_message(send_role_id, receive_phone_number, joined_company_id):
+    url = f"{interface_url}/roleMessage/getRoleMessage"
+
+    # 定义请求参数
+    params = {
+        "sendRoleId": send_role_id,
+        "receivePhoneNumber": receive_phone_number,
+        "joinedCompanyId": joined_company_id
+    }
+    success, json = send_post_request(url, params)
+    if success:
+        if json.get("code") == success_code:
+            print(f"查询消息数据成功")
+            return True, json
+        else:
+            print(f"查询消息数据失败，原因为:{json.get('message')}")
+            return False
+
+    return False
 
 
 # 企业邀请用户
@@ -129,35 +168,153 @@ def inviteUsers(sendRoleId, companyId, receive_phone_numbers):
         "companyId": companyId,
         "receivePhoneNumbers": receive_phone_numbers
     }
-    json = send_post_request(url, params)
-    if json.get("code") == 200:
-        print(f"邀请{receive_phone_numbers}加入企业成功")
+    success, json = send_post_request(url, params)
+    if success:
+        if json.get("code") == success_code:
+            print(f"邀请加入企业成功")
+            return True, json
+        else:
+            print(f"邀请加入企业失败，原因为:{json.get('message')}")
+            return False
+
+    return False
+
+
+# 企业邀请用户
+def inviteUser(sendRoleId, companyId, receive_phone_number):
+    url = f"{interface_url}/roleMessage/inviteUser"
+
+    # 定义请求参数
+    params = {
+        "sendRoleId": sendRoleId,
+        "companyId": companyId,
+        "receivePhoneNumber": receive_phone_number
+    }
+    success, json = send_post_request(url, params)
+    if success:
+        if json.get("code") == success_code:
+            print(f"邀请加入企业成功")
+            return True, json
+        else:
+            print(f"邀请加入企业失败，原因为:{json.get('message')}")
+            return False
+
+    return False
+
+
+def add_company(user_id):
+    fake = Faker(locale='zh_CN')
+    company_name = fake.company()
+    company_legal_person = fake.name()
+    company_address = fake.address()
+    company_type = fake.company_suffix()
+    company_number = fake.random_number(digits=6)
+    company_register_date = datetime.strptime(fake.date(), "%Y-%m-%d").strftime("%Y年%m月%d日")
+    company_phone_number = fake.phone_number()
+    company_register_number = fake.random_number(digits=8)
+    company_register_capital = fake.random_number(digits=7)
+    company_credit_code = fake.random_number(digits=18)
+    company_business = fake.sentence(nb_words=6)
+    company_registration_org = fake.company_suffix()
+    status = 2
+    create_time = fake.date_time()
+    update_time = fake.date_time()
+    company_valid_period = fake.date()
+
+    # 插入数据的SQL语句
+    sql = (f'INSERT INTO company (user_id, company_name, company_legal_person, company_address, company_type, '
+           'company_number, company_register_date, company_phone_number, company_register_number, '
+           'company_register_capital, company_credit_code, company_business, company_registration_org, '
+           'status, create_time, update_time, company_valid_period) '
+           'VALUES '
+           '(%s,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)')
+
+    # 执行SQL语句插入数据
+    cursor.execute(sql, (
+        user_id, company_name, company_legal_person, company_address, company_type, company_number,
+        company_register_date, company_phone_number, company_register_number, company_register_capital,
+        company_credit_code, company_business, company_registration_org, status, create_time, update_time,
+        company_valid_period))
+    connection.commit()
+
+    return get_company_by_id(cursor.lastrowid)
+
+
+def get_company_by_id(company_id):
+    sql = f"SELECT * FROM company WHERE id = {company_id}"
+    cursor.execute(sql)
+
+    columns = cursor.description
+    column_names = [column[0] for column in columns]
+    company = cursor.fetchone()
+    return company is not None, company, column_names
+
+
+def get_user_by_id(user_id):
+    url = f"http://localhost:8080/user/selectById?id={user_id}"
+    success, json = send_get_request(url)
+    if success:
+        if json.get("code") == success_code:
+            return True, json
+        else:
+            message = json.get("message")
+            print(f"获取用户数据失败，失败原因为：{message}")
+    return False, json
+
+
+def get_sms_code(phone_number):
+    url = f"{interface_url}/api/getSmsCode?phoneNumber={phone_number}"
+    success, json = send_get_request(url)
+    if success:
+        if json.get("code") == success_code:
+            return True, json
+    return False, json
+
+
+def login_with_sms_code(phone_number, user_name, pass_word):
+    url = f"{interface_url}/api/loginSmsCode"
+    success, json = get_sms_code(phone_number)
+    if success:
+        params = {
+            "phoneNumber": phone_number,
+            "smsCode": json.get("data").get("smsCode"),
+            "userName": user_name,
+            "password": pass_word
+        }
+        success, json = send_post_request(url, params=params)
+        if success:
+            if json.get("code") == success_code:
+                print(f"{phone_number} 登陆成功")
+                return True, json
+            else:
+                message = json.get("message")
+                print(f"{phone_number} 登陆失败，原因为:{message}")
     else:
-        message = json.get("message")
-        print(f'邀请{receive_phone_numbers}加入企业失败，原因为:{message}')
+        print("获取验证码失败")
+    return False, json
 
 
 def send_post_request(url, params=None, data=None):
     response = requests.post(url, params=params, data=data, headers=headers)
-    if response.status_code == 200:
-        json = response.json()
-        return json
+    if response.status_code == success_code:
+        return True, response.json()
     else:
         print("请求失败")
-        return None
+        return False, response.json()
 
 
 def send_get_request(url):
-    response = requests.get(url)
-    if response.status_code == 200 and response.json().get("code") == 200:
-        return response.json()
+    response = requests.get(url, headers=headers)
+    if response.status_code == success_code:
+        return True, response.json()
     else:
-        print(response.json().get("message"))
+        print("请求失败")
+        return False
 
 
 def get_file_name():
     s = ""
-    for e in table_name.split("_"):
+    for e in database_table_name.split("_"):
         s += e.capitalize()
     return s
 
@@ -192,22 +349,11 @@ def get_example_value(field_type: str):
     return example_value
 
 
-connection = pymysql.connect(host=host,
-                             user=user,
-                             password=password,
-                             database=database)
-
-
 # 获取表字段和类型以及注释
 def get_table_fields_with_comments() -> List[Tuple[str, str, str]]:
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(f"SHOW FULL COLUMNS FROM {table_name};")
-            fields = cursor.fetchall()
-            return [(field[0], field[1], field[8]) for field in fields]
-    except pymysql.Error as e:
-        print("Error getting table fields:", e)
-        return []
+    cursor.execute(f"SHOW FULL COLUMNS FROM {database_table_name};")
+    fields = cursor.fetchall()
+    return [(field[0], field[1], field[8]) for field in fields]
 
 
 def type_database_to_java(field_type: str):
