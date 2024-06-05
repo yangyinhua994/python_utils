@@ -8,6 +8,7 @@ import base
 
 company_handle_status_agree = 1
 company_handle_status_refuse = 2
+interface_url = "http://localhost:8080"
 
 
 def get_user_by_id(id):
@@ -79,7 +80,7 @@ def clear_data(ignore_user_ids=None, ignore_company_ids=None):
 
 # 处理消息
 def updateMessageById(id, handleStatus):
-    url = f"{base.interface_url}/roleMessage/updateMessageById"
+    url = f"{interface_url}/roleMessage/updateMessageById"
     params = {
         "id": id,
         "handleStatus": handleStatus,
@@ -95,7 +96,7 @@ def updateMessageById(id, handleStatus):
 
 
 def get_role_message(send_role_id, receive_phone_number, joined_company_id):
-    url = f"{base.interface_url}/roleMessage/getRoleMessage"
+    url = f"{interface_url}/roleMessage/getRoleMessage"
 
     # 定义请求参数
     params = {
@@ -117,7 +118,7 @@ def get_role_message(send_role_id, receive_phone_number, joined_company_id):
 
 # 企业邀请用户
 def inviteUsers(sendRoleId, companyId, receive_phone_numbers):
-    url = f"{base.interface_url}/roleMessage/inviteUsers"
+    url = f"{interface_url}/roleMessage/inviteUsers"
 
     # 定义请求参数
     params = {
@@ -139,7 +140,7 @@ def inviteUsers(sendRoleId, companyId, receive_phone_numbers):
 
 # 企业邀请用户
 def inviteUser(companyId, receive_phone_number):
-    url = f"{base.interface_url}/roleMessage/inviteUser"
+    url = f"{interface_url}/roleMessage/inviteUser"
 
     # 定义请求参数
     params = {
@@ -227,7 +228,8 @@ if __name__ == '__main__':
         for i in range(test_number):
             all_success = False
             phone_number = phone_numbers[i]
-            success, json = base.login_with_sms_code(phone_number, usernames[i], "123456")
+            success, json = base.login_with_sms_code(interface_url, phone_number, usernames[i],
+                                                     "123456")
             user_id = None
             if success:
                 switching_role_id = 0
@@ -239,7 +241,7 @@ if __name__ == '__main__':
                 if switching_role_id == 0:
                     switching_role_id = data.get("userRoles")[0].get("id")
                 # 切换角色
-                success, json = base.changeRole(user_id, switching_role_id)
+                success, json = base.changeRole(interface_url, user_id, switching_role_id)
                 if success:
                     if company_id is None:
                         success, row, columns = add_company(admin_id)

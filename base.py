@@ -13,7 +13,6 @@ entity_write_path = write_path + "/entity"
 dto_write_path = write_path + "/dto"
 vo_write_path = write_path + "/vo"
 
-interface_url = "http://localhost:8080"
 headers = {
     "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInN1YiI6IjE4NzE3MDg4NDE0IiwiaWF0IjoxNzExNjA1MDA1LCJl"
                      "eHAiOjg4MTExNjA1MDA1fQ.wrFojucpq4ytvF65ZbDrt-0zc0-MUCTirVm7c_06UIs",
@@ -47,6 +46,9 @@ dto_add_fields = [["pageNum", "int", "当前页码", "1"],
                   ["pageSize", "int", "每页记录数", "10"]
                   ]
 
+dto_check_null_fields = ["roleId", "projectGroupId", "projectFileId", "projectName", "projectCoverFileId", "isPublic",
+                         "isFree", "isRelease", "projectGroupName", "roleId"]
+
 # user表字段,难得改了,先注释掉
 # dto_add_fields = [["refreshJwt", "String", "刷新token", ""],
 #                   ["newPassword", "String", "新密码", ""],
@@ -65,7 +67,7 @@ cursor = connection.cursor()
 # 定义请求头信息
 
 
-def get_sms_code(phone_number):
+def get_sms_code(interface_url, phone_number):
     url = f"{interface_url}/api/getSmsCode?phoneNumber={phone_number}"
     success, json = send_get_request(url)
     if success:
@@ -74,7 +76,7 @@ def get_sms_code(phone_number):
     return False, json
 
 
-def changeRole(userId, targetRoleId):
+def changeRole(interface_url, userId, targetRoleId):
     url = f"{interface_url}/userRole/changeRole"
     params = {
         "userId": userId,
@@ -91,9 +93,9 @@ def changeRole(userId, targetRoleId):
     return False, json
 
 
-def login_with_sms_code(phone_number, user_name, pass_word):
+def login_with_sms_code(interface_url, phone_number, user_name, pass_word):
     url = f"{interface_url}/api/loginSmsCode"
-    success, json = get_sms_code(phone_number)
+    success, json = get_sms_code(interface_url, phone_number)
     if success:
         params = {
             "phoneNumber": phone_number,
@@ -149,9 +151,7 @@ def get_file_name():
 
 def get_default_value(field: str):
     default_value = ""
-    if field == "id":
-        default_value = "0L"
-    elif field == "upload_user_id":
+    if field == "upload_user_id":
         default_value = "0L"
     elif field == "file_type_id":
         default_value = "0L"
@@ -194,6 +194,25 @@ def type_database_to_java(field_type: str):
         java_type = 'Long'
     elif field_type == 'int':
         java_type = 'int'
+    elif field_type == 'timestamp':
+        java_type = 'Timestamp'
+    elif field_type == 'Long':
+        java_type = 'Long'
+    else:
+        java_type = 'field_type'  # 未知类型
+    return java_type
+
+
+def type_database_to_java_packaging_type(field_type: str):
+    # 根据数据库字段类型映射为Java类型
+    if field_type.startswith('varchar'):
+        java_type = 'String'
+    elif field_type == 'String':
+        java_type = 'String'
+    elif field_type == 'bigint':
+        java_type = 'Long'
+    elif field_type == 'int':
+        java_type = 'Integer'
     elif field_type == 'timestamp':
         java_type = 'Timestamp'
     elif field_type == 'Long':
