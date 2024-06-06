@@ -25,7 +25,7 @@ def build_fields_str(field: str, field_type: str, comment: str, default_value: s
     else:
         s += f'    @ApiModelProperty(value = "{comment}", example = "{example_value}")\n'
     field_name = snake_to_camel(field)
-    if field_name in base.dto_check_null_fields:
+    if field_name not in base.dto_not_check_null_fields:
         s += f'    @NotNull(message = "{comment}不能为空")\n'
         field_type = base.type_database_to_java_packaging_type(field_type)
     else:

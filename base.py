@@ -7,8 +7,8 @@ host = '192.168.0.232'
 database_username = 'yyh'
 database_password = '1234qwerQWER'
 database_name = 'project'
-database_table_name = 'project'
-write_path = "/root/IdeaProjects/spring-cloud-project/project_server/src/main/java/com/example"
+database_table_name = 'resource'
+write_path = "/root/IdeaProjects/spring-cloud-project/project-server/src/main/java/com/example"
 entity_write_path = write_path + "/entity"
 dto_write_path = write_path + "/dto"
 vo_write_path = write_path + "/vo"
@@ -46,8 +46,7 @@ dto_add_fields = [["pageNum", "int", "当前页码", "1"],
                   ["pageSize", "int", "每页记录数", "10"]
                   ]
 
-dto_check_null_fields = ["roleId", "projectGroupId", "projectFileId", "projectName", "projectCoverFileId", "isPublic",
-                         "isFree", "isRelease", "projectGroupName", "roleId"]
+dto_not_check_null_fields = ["id", "createTime", "updateTime", "status", "pageNum", "pageSize", "jsonFilePath"]
 
 # user表字段,难得改了,先注释掉
 # dto_add_fields = [["refreshJwt", "String", "刷新token", ""],
@@ -229,3 +228,15 @@ def write_file(data: str, path: str):
         print("写入成功")
     except Exception as e:
         print(f"写入文件时发生错误：{e}")
+
+
+login_with_phoneNumber_password_url = "http://localhost:7070/api/loginPassword"
+
+
+def login_with_phoneNumber_password(phoneNumber, password):
+    login_with_phoneNumber_password_data = {
+        "phoneNumber": phoneNumber,
+        "password": password
+    }
+    return send_post_request(login_with_phoneNumber_password_url,
+                             params=login_with_phoneNumber_password_data)
