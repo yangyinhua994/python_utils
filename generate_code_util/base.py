@@ -3,22 +3,20 @@ from typing import List, Tuple
 
 import pymysql
 
-project_path = "/root/IdeaProjects/spring-cloud-project"
-module_name = "project-server"
-project_module_path = os.path.join(project_path, module_name)
+example_path = "/root/IdeaProjects/shardingJdbcDemo/src/main/java/com/example"
 host = '10.1.10.49'
 database_username = 'root'
 database_password = 'root'
-database_name = 'project'
-database_table_name = 'textures'
-write_path = os.path.join(project_module_path, "src/main/java/com/example")
-entity_write_path = os.path.join(project_module_path, "src/main/java/com/example/entity")
-dto_write_path = os.path.join(project_module_path, "src/main/java/com/example/dto")
-vo_write_path = os.path.join(project_module_path, "src/main/java/com/example/vo")
-controller_path = os.path.join(project_module_path, "src/main/java/com/example/controller")
-service_path = os.path.join(project_module_path, "src/main/java/com/example/service")
-service_impl_path = os.path.join(project_module_path, "src/main/java/com/example/service/impl")
-mapper_path = os.path.join(project_module_path, "src/main/java/com/example/mapper")
+database_name = 'test'
+database_table_name = 'test'
+write_path = example_path
+entity_write_path = os.path.join(example_path, 'entity')
+dto_write_path = os.path.join(example_path, 'dto')
+vo_write_path = os.path.join(example_path, 'vo')
+controller_path = os.path.join(example_path, 'controller')
+service_path = os.path.join(example_path, 'service')
+service_impl_path = os.path.join(service_path, 'impl')
+mapper_path = os.path.join(example_path, 'mapper')
 
 headers = {
     "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInN1YiI6IjE4NzE3MDg4NDE0IiwiaWF0IjoxNzExNjA1MDA1LCJl"
@@ -147,6 +145,12 @@ def type_database_to_java_packaging_type(field_type: str):
 
 
 def write_file(data: str, path: str):
+    p = os.path.dirname(path)
+    if not os.path.exists(p):
+        os.makedirs(os.path.dirname(p))
+    if os.path.isfile(path):
+        os.remove(path)
+
     try:
         with open(path, 'w') as f:
             f.write(data)
