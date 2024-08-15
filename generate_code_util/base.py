@@ -3,20 +3,21 @@ from typing import List, Tuple
 
 import pymysql
 
-example_path = "/root/IdeaProjects/shardingJdbcDemo/src/main/java/com/example"
-host = '10.1.10.49'
-database_username = 'root'
-database_password = 'root'
-database_name = 'test'
-database_table_name = 'test'
-write_path = example_path
-entity_write_path = os.path.join(example_path, 'entity')
-dto_write_path = os.path.join(example_path, 'dto')
-vo_write_path = os.path.join(example_path, 'vo')
-controller_path = os.path.join(example_path, 'controller')
-service_path = os.path.join(example_path, 'service')
-service_impl_path = os.path.join(service_path, 'impl')
-mapper_path = os.path.join(example_path, 'mapper')
+server_name = "project-server"
+database_name = 'project'
+database_table_name = 'project_label'
+this_example_path = f"/root/IdeaProjects/bjq_parent/{server_name}/src/main/java/com/example"
+common_example_path = "/root/IdeaProjects/bjq_parent/common/src/main/java/com/example"
+host = 'localhost'
+database_username = 'yyh'
+database_password = '1234qwerQWER'
+entity_write_path = os.path.join(common_example_path, 'entity')
+dto_write_path = os.path.join(common_example_path, 'dto')
+vo_write_path = os.path.join(common_example_path, 'vo')
+controller_path = os.path.join(this_example_path, 'controller')
+service_path = os.path.join(common_example_path, 'service')
+service_impl_path = os.path.join(common_example_path, 'service/impl')
+mapper_path = os.path.join(common_example_path, 'mapper')
 
 headers = {
     "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInN1YiI6IjE4NzE3MDg4NDE0IiwiaWF0IjoxNzExNjA1MDA1LCJl"
@@ -27,7 +28,7 @@ headers = {
 success_code = 200
 
 # vo对象去除的字段
-entity_remove_fields = []
+entity_remove_fields = ["id", "create_time", "update_time", "status"]
 
 # entity对象增加的字段,格式为字段名，数据类型，注释，默认值
 entity_add_fields = []
@@ -147,14 +148,11 @@ def type_database_to_java_packaging_type(field_type: str):
 def write_file(data: str, path: str):
     p = os.path.dirname(path)
     if not os.path.exists(p):
-        os.makedirs(os.path.dirname(p))
-    if os.path.isfile(path):
-        os.remove(path)
-
+        os.makedirs(p)
     try:
         with open(path, 'w') as f:
             f.write(data)
-        print("写入成功")
+        print(f"文件创建成功: {path}")
     except Exception as e:
         print(f"写入文件时发生错误：{e}")
 

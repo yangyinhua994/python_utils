@@ -20,6 +20,9 @@ def build_fields_str(field: str, field_type: str, comment: str):
 def generate_java_vo_class() -> str:
     java_class = (f"package com.example.vo;\n\n"
                   f"import lombok.Data;\n\n"
+                  "/**\n"
+                  " * @author yyh\n"
+                  " */\n"
                   f"@Data\npublic class {java_name} {{\n\n")
 
     for field, field_type, comment in base.get_table_fields_with_comments():

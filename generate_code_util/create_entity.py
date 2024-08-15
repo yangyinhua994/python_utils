@@ -16,8 +16,6 @@ def build_fields_str(field: str, field_type: str, comment: str, default_value: s
         comment = field
 
     s += f"    /**\n     * {comment}\n     */\n"
-    if field == "id":
-        s += '    @TableId("id")\n'
     # if default_value is None or default_value == "":
     #     s += f"    private {base.type_database_to_java(field_type)} {snake_to_camel(field)};\n\n"
     # else:
@@ -30,12 +28,15 @@ def build_fields_str(field: str, field_type: str, comment: str, default_value: s
 def generate_java_entity_class() -> str:
     java_class = (f"package com.example.entity;\n\n"
                   f"import com.baomidou.mybatisplus.annotation.TableName;\n"
-                  f"import com.baomidou.mybatisplus.annotation.TableId;\n"
-                  f"import lombok.Data;\n\n"
-                  f"import java.sql.Timestamp;\n\n"
+                  f"import lombok.Data;\n"
+                  f"import lombok.EqualsAndHashCode;\n\n"
+                  "/**\n"
+                  " * @author yyh\n"
+                  " */\n"
+                  "@EqualsAndHashCode(callSuper = true)\n"
                   f"@Data\n"
                   f'@TableName("{base.database_table_name}")\n'
-                  f"public class {java_name} {{\n\n")
+                  f"public class {java_name} extends BaseEntity {{\n\n")
 
     for field, field_type, comment in base.get_table_fields_with_comments():
         if field in base.entity_remove_fields:

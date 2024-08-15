@@ -6,6 +6,9 @@ import com.example.mapper.TexturesMapper;
 import com.example.service.TexturesServer;
 import org.springframework.stereotype.Service;
 
+/**
+ * @author yyh
+ */
 @Service
 public class TexturesServerImpl extends ServiceImpl<TexturesMapper, Textures> implements TexturesServer {
 }

@@ -51,6 +51,9 @@ def generate_java_dto_class() -> str:
                   f"import lombok.Data;\n\n"
                   "import javax.validation.constraints.NotNull;\n"
                   "\n"
+                  "/**\n"
+                  " * @author yyh\n"
+                  " */\n"
                   f"@Data\npublic class {java_name} {{\n\n")
 
     for field, field_type, comment in base.get_table_fields_with_comments():
